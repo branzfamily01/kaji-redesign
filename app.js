@@ -10,6 +10,7 @@ const CATS={home:"家そのもの",child:"子ども関連",management:"管理・
 const DOW=["日","月","火","水","木","金","土"];
 const COLORS=[["#3973b8","#edf5ff"],["#7359a7","#f1edfa"],["#c45b7d","#fff0f5"],["#c97427","#fff4e9"],["#138a72","#e6f5f0"],["#8a6d3b","#f8f0df"]];
 const FONT_LABELS={system:"標準ゴシック",rounded:"丸ゴシック",textbook:"教科書風",mincho:"明朝"};
+const READINGS={"洗濯機を回す":"せんたくきをまわす","学校プリント確認":"がっこうぷりんとかくにん","夕食づくり":"ゆうしょくづくり","明日の予定確認":"あしたのよていかくにん","ゴミをまとめる":"ごみをまとめる","ゴミ出し":"ごみだし","お風呂掃除":"おふろそうじ","食器を片づける":"しょっきをかたづける","水筒を出す":"すいとうをだす","明日の学校準備":"あしたのがっこうじゅんび","自分の洗濯物をしまう":"じぶんのせんたくものをしまう","脱いだ服を洗濯カゴへ":"ぬいだふくをせんたくかごへ","学校の準備":"がっこうのじゅんび","朝の起床アラーム":"あさのきしょうあらーむ","ロボット掃除":"ろぼっとそうじ","麦茶を作る":"むぎちゃをつくる","習い事の持ち物確認":"ならいごとのもちものかくにん"};
 const V2_IDEAS=[
   "家族の複数端末で同期・共有",
   "通知・リマインダーと担当者への声かけ代替",
@@ -68,6 +69,7 @@ function normalize(s){
     if(t.redesign==null)t.redesign="none";
     if(t.level==null)t.level=0;
     if(t.baselineMinutes==null)t.baselineMinutes=+t.minutes||0;
+    if(t.reading==null)t.reading=READINGS[t.name]||"";
   });
   return s;
 }
@@ -79,7 +81,7 @@ let ui={page:"home",homeMode:"person",taskFilter:"all",search:"",editTaskId:null
 function save(){localStorage.setItem(APP_KEY,JSON.stringify(state))}
 function saveC(){localStorage.setItem(TODAY_KEY,JSON.stringify(completions))}
 function applyFont(){document.documentElement.dataset.font=state.settings.font||"system"}
-function esc(v=""){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+function esc(v=""){return String(v).replace(/[&<>"']/g,c=>`&#${c.charCodeAt(0)};`)}
 function dateKey(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 function mem(id){return state.members.find(m=>m.id===id)}
 function ownersOf(t){return Array.isArray(t.owners)?t.owners:[]}
@@ -98,7 +100,7 @@ function childLoad(id){return sum(td().filter(t=>hasOwner(t,id)),t=>+t.minutes||
 function toast(s){ui.toast=s;render();setTimeout(()=>{ui.toast=null;render()},1500)}
 function title(){return ({home:"ホーム",tasks:"タスク一覧",redesign:"見直し",analytics:"分析",settings:"設定"})[ui.page]}
 function fmtMin(min){min=Math.round(min);if(min<60)return`${min}分`;const h=Math.floor(min/60),m=min%60;return m?`${h}h${m}m`:`${h}h`}
-function kanaSort(a,b){return a.name.localeCompare(b.name,"ja",{sensitivity:"base",numeric:true})}
+function kanaSort(a,b){const ak=a.reading||READINGS[a.name]||a.name,bk=b.reading||READINGS[b.name]||b.name;return ak.localeCompare(bk,"ja",{sensitivity:"base",numeric:true})}
 
 function render(){
   applyFont();
@@ -150,7 +152,7 @@ function tasks(){
     a=a.filter(t=>t.name.toLowerCase().includes(q)||(CATS[t.category]||'').includes(q));
   }
   if(state.settings.taskSort==='kana')a.sort(kanaSort);
-  return `<h1 class="page-title">家庭タスク</h1><p class="page-lead">タスクを実際に分担できる単位へ分解。共同作業は複数人を担当にできます。</p>
+  return `<h1 class="page-title">家庭タスク</h1><p class="page-lead">タスクを実際に分担できる単位へ分解。共同作業は複数人を担当にできます。五十音順はタスクの「よみがな」を使います。</p>
   <div class="search"><span>⌕</span><input id="task-search" value="${esc(ui.search)}" placeholder="タスクを検索"></div>
   <div class="filter-row">${[['all','すべて'],['unassigned','未担当'],['child','子ども関連'],['home','家'],['management','管理'],['cleaning','掃除'],['cooking','料理']].map(([k,l])=>`<button class="chip ${ui.taskFilter===k?'active':''}" data-task-filter="${k}">${l}</button>`).join('')}</div>
   <div class="card"><div class="card-title-row"><div><h3 class="card-title">${a.length}件</h3><div class="card-sub">${state.settings.taskSort==='kana'?'五十音順':'登録順'}で表示</div></div><div class="header-actions"><button class="ghost-btn" data-action="toggle-sort">${state.settings.taskSort==='kana'?'↩ 登録順':'あ→ん 五十音順'}</button><button class="primary-btn" data-action="new-task">＋ 追加</button></div></div>${a.length?a.map(masterRow).join(''):`<div class="empty">該当するタスクはありません。</div>`}</div>`;
@@ -206,7 +208,7 @@ function ownerPicker(t){
 }
 function taskModal(){
   const ex=ui.editTaskId?state.tasks.find(t=>t.id===ui.editTaskId):null,t=ex||{name:"",category:"home",forWhom:"family",owners:[],days:[1,2,3,4,5],time:"evening",minutes:5,burden:2};
-  return `<div class="modal-backdrop" data-modal-close><div class="modal" onclick="event.stopPropagation()"><div class="modal-head"><div class="modal-title">${ex?'タスクを編集':'タスクを追加'}</div><button class="modal-close" data-action="close-modal">×</button></div><form id="task-form"><div class="form-grid"><div class="field full"><label>タスク名</label><input name="name" required value="${esc(t.name)}" placeholder="例：水筒を準備する"></div><div class="field"><label>分類</label><select name="category">${Object.entries(CATS).map(([k,l])=>`<option value="${k}" ${t.category===k?'selected':''}>${l}</option>`).join('')}</select></div><div class="field"><label>誰のため？</label><select name="forWhom"><option value="family" ${t.forWhom==='family'?'selected':''}>家族全体</option><option value="children" ${t.forWhom==='children'?'selected':''}>子どもたち</option>${state.members.filter(m=>m.role!=='auto').map(m=>`<option value="${m.id}" ${t.forWhom===m.id?'selected':''}>${m.emoji} ${esc(m.name)}</option>`).join('')}</select></div><div class="field full"><label>担当（複数選択可）</label>${ownerPicker(t)}</div><div class="field"><label>時間帯</label><select name="time">${Object.entries(TIMES).map(([k,l])=>`<option value="${k}" ${t.time===k?'selected':''}>${l}</option>`).join('')}</select></div><div class="field"><label>1回の所要時間（分）</label><input name="minutes" type="number" min="0" max="300" value="${+t.minutes||0}"></div><div class="field"><label>面倒度 1〜5</label><input name="burden" type="number" min="1" max="5" value="${Math.max(1,+t.burden||1)}"></div><div class="field full"><label>実施する曜日</label><div class="weekdays">${DOW.map((l,i)=>`<button type="button" class="day-btn ${t.days.includes(i)?'active':''}" data-day="${i}">${l}</button>`).join('')}</div><input type="hidden" name="days" value="${t.days.join(',')}"></div></div><div class="modal-actions">${ex?`<button type="button" class="danger-btn" data-delete-task="${t.id}">削除</button>`:''}<button type="button" class="ghost-btn" data-action="close-modal">キャンセル</button><button class="primary-btn" type="submit">保存</button></div></form></div></div>`;
+  return `<div class="modal-backdrop" data-modal-close><div class="modal" onclick="event.stopPropagation()"><div class="modal-head"><div class="modal-title">${ex?'タスクを編集':'タスクを追加'}</div><button class="modal-close" data-action="close-modal">×</button></div><form id="task-form"><div class="form-grid"><div class="field full"><label>タスク名</label><input name="name" required value="${esc(t.name)}" placeholder="例：水筒を準備する"></div><div class="field full"><label>よみがな（五十音順用・任意）</label><input name="reading" value="${esc(t.reading||READINGS[t.name]||'')}" placeholder="例：すいとうをじゅんびする"></div><div class="field"><label>分類</label><select name="category">${Object.entries(CATS).map(([k,l])=>`<option value="${k}" ${t.category===k?'selected':''}>${l}</option>`).join('')}</select></div><div class="field"><label>誰のため？</label><select name="forWhom"><option value="family" ${t.forWhom==='family'?'selected':''}>家族全体</option><option value="children" ${t.forWhom==='children'?'selected':''}>子どもたち</option>${state.members.filter(m=>m.role!=='auto').map(m=>`<option value="${m.id}" ${t.forWhom===m.id?'selected':''}>${m.emoji} ${esc(m.name)}</option>`).join('')}</select></div><div class="field full"><label>担当（複数選択可）</label>${ownerPicker(t)}</div><div class="field"><label>時間帯</label><select name="time">${Object.entries(TIMES).map(([k,l])=>`<option value="${k}" ${t.time===k?'selected':''}>${l}</option>`).join('')}</select></div><div class="field"><label>1回の所要時間（分）</label><input name="minutes" type="number" min="0" max="300" value="${+t.minutes||0}"></div><div class="field"><label>面倒度 1〜5</label><input name="burden" type="number" min="1" max="5" value="${Math.max(1,+t.burden||1)}"></div><div class="field full"><label>実施する曜日</label><div class="weekdays">${DOW.map((l,i)=>`<button type="button" class="day-btn ${t.days.includes(i)?'active':''}" data-day="${i}">${l}</button>`).join('')}</div><input type="hidden" name="days" value="${t.days.join(',')}"></div></div><div class="modal-actions">${ex?`<button type="button" class="danger-btn" data-delete-task="${t.id}">削除</button>`:''}<button type="button" class="ghost-btn" data-action="close-modal">キャンセル</button><button class="primary-btn" type="submit">保存</button></div></form></div></div>`;
 }
 function memberModal(){const ex=ui.editMemberId?mem(ui.editMemberId):null,m=ex||{name:"",role:"adult",emoji:"🙂"};return `<div class="modal-backdrop" data-modal-close><div class="modal" onclick="event.stopPropagation()"><div class="modal-head"><div class="modal-title">${ex?'家族を編集':'家族を追加'}</div><button class="modal-close" data-action="close-modal">×</button></div><form id="member-form"><div class="form-grid"><div class="field full"><label>表示名</label><input name="name" required value="${esc(m.name)}"></div><div class="field"><label>絵文字</label><input name="emoji" value="${esc(m.emoji||'🙂')}" maxlength="4"></div><div class="field"><label>役割</label><select name="role"><option value="adult" ${m.role==='adult'?'selected':''}>大人</option><option value="child" ${m.role==='child'?'selected':''}>子ども</option><option value="auto" ${m.role==='auto'?'selected':''}>自動・機械</option></select></div></div><div class="modal-actions">${ex&&!['me','dad','yui','so','auto'].includes(ex.id)?`<button type="button" class="danger-btn" data-delete-member="${ex.id}">削除</button>`:''}<button type="button" class="ghost-btn" data-action="close-modal">キャンセル</button><button class="primary-btn" type="submit">保存</button></div></form></div></div>`}
 function unassignedModal(){const a=td().filter(t=>ownersOf(t).length===0);return `<div class="modal-backdrop" data-modal-close><div class="modal" onclick="event.stopPropagation()"><div class="modal-head"><div class="modal-title">今日の未担当</div><button class="modal-close" data-action="close-modal">×</button></div>${a.map(t=>`<div class="task-master-row"><div><strong>${esc(t.name)}</strong><div class="card-sub">${TIMES[t.time]} · 約${t.minutes}分</div></div><button class="soft-btn" data-edit-task="${t.id}">担当を選ぶ</button></div>`).join('')||`<div class="empty">未担当はありません。</div>`}</div></div>`}
@@ -250,7 +252,7 @@ function saveTask(e){
   e.preventDefault();
   const f=new FormData(e.currentTarget),days=(f.get('days')||'').split(',').filter(Boolean).map(Number),owners=[...new Set(f.getAll('owners').map(String))];
   if(!days.length){alert('実施する曜日を1つ以上選んでください。');return}
-  const data={name:String(f.get('name')||'').trim(),category:String(f.get('category')||'home'),owners,forWhom:String(f.get('forWhom')||'family'),time:String(f.get('time')||'evening'),minutes:Math.max(0,+f.get('minutes')||0),burden:Math.max(1,Math.min(5,+f.get('burden')||1)),days};
+  const data={name:String(f.get('name')||'').trim(),reading:String(f.get('reading')||'').trim(),category:String(f.get('category')||'home'),owners,forWhom:String(f.get('forWhom')||'family'),time:String(f.get('time')||'evening'),minutes:Math.max(0,+f.get('minutes')||0),burden:Math.max(1,Math.min(5,+f.get('burden')||1)),days};
   if(ui.editTaskId){const t=state.tasks.find(x=>x.id===ui.editTaskId);if(t){const old=t.minutes;Object.assign(t,data);if(t.baselineMinutes==null)t.baselineMinutes=old}}
   else state.tasks.push({id:'t'+Date.now(),...data,redesign:'none',level:0,active:true,baselineMinutes:data.minutes});
   save();ui.modal=null;toast(owners.length>1?'共同タスクとして保存しました':'タスクを保存しました');
