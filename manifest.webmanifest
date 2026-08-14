@@ -1,9 +1,11 @@
 {
-  "name": "家事リデザイン 仕様書",
+  "name": "家事リデザイン",
   "short_name": "家事リデザイン",
+  "description": "今日の家庭タスクを一瞥し、裏側で家事の削減・自動化・分担・子どもの自立移管を進める家庭運営アプリ",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#f7f3ed",
-  "theme_color": "#f5efe6",
-  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "background_color": "#f5f6f2",
+  "theme_color": "#f6f7f2",
+  "icons": [{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }
