@@ -1,0 +1,9 @@
+{
+  "name": "家事リデザイン 仕様書",
+  "short_name": "家事リデザイン",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f7f3ed",
+  "theme_color": "#f5efe6",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
