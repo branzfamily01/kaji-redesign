@@ -1,0 +1,5 @@
+/* v2.1 cloud sync */
+.cloud-card{border-color:#c9ded8;background:linear-gradient(180deg,#fff,#f8fcfb)}
+.cloud-status{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:13px;background:#edf7f4;margin:9px 0 11px;font-size:12px;color:#175e50}.cloud-status small{color:#9b3f3f;word-break:break-word}
+.cloud-auth{display:grid;grid-template-columns:1fr 1fr;gap:7px}.cloud-auth input{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}.cloud-buttons{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.cloud-auth .cloud-buttons{grid-column:1/-1;margin-top:0}.cloud-user{font-size:12px;padding:8px 0}.cloud-house{font-size:11px}.cloud-house>div:first-child{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.cloud-house code,.cloud-card code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#eef2f0;padding:3px 6px;border-radius:7px;word-break:break-all}.cloud-note{font-size:10px;color:var(--muted);margin:11px 0 0}.cloud-card .field select{width:100%}
+@media(max-width:520px){.cloud-auth{grid-template-columns:1fr}.cloud-auth .cloud-buttons{grid-column:auto}}
