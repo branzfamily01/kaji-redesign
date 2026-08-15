@@ -1,4 +1,4 @@
-const CACHE="kaji-redesign-v2.1.0";
+const CACHE="kaji-redesign-v2.1.1";
 const ASSETS=["./","./index.html","./style.css","./v21.css","./app.js","./firebase-config.js","./cloud-bridge.js","./manifest.webmanifest","./icon.svg"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting()});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
