@@ -1,17 +1,17 @@
 /*
  * Firebase client configuration for 家事リデザイン v2.1.
- * Firebase の Web App 設定値は「秘密鍵」ではありませんが、
- * 実プロジェクト作成後にここへ設定してください。
+ * Firebase Web App の設定値です。管理者秘密鍵は含みません。
  */
 globalThis.KAJI_FIREBASE_CONFIG = {
-  enabled: false,
+  enabled: true,
   firebase: {
-    apiKey: "",
-    authDomain: "",
-    projectId: "",
-    storageBucket: "",
-    messagingSenderId: "",
-    appId: ""
+    apiKey: "AIzaSyBwXAYtBbrGmJqdTonfZ3xNMSG6SKQRoQA",
+    authDomain: "kaji-redesign.firebaseapp.com",
+    projectId: "kaji-redesign",
+    storageBucket: "kaji-redesign.firebasestorage.app",
+    messagingSenderId: "456064052214",
+    appId: "1:456064052214:web:e6f011cb248890c9b075d7",
+    measurementId: "G-KRZZLNJP6J"
   },
   vapidKey: "",
   functionsRegion: "asia-northeast1"
